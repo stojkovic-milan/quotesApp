@@ -31,9 +31,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddTransient(typeof(IUserService), typeof(UserService));
+builder.Services.AddCors();
 
 var app = builder.Build();
 
+app.UseCors(
+    options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin()
+);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
