@@ -24,7 +24,7 @@ public class UserService : IUserService
             .Any(p => p.Email == signupDTO.Email);
         if (emailInUse)
             throw new Exception("Email already in use");
-        //TODO: BONUS Add password requirements
+        //TODO: BONUS Add password requirements 
 
         string passwordHash = BCrypt.Net.BCrypt.HashPassword(signupDTO.Password);
 
