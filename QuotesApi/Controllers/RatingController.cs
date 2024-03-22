@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using QuotesApi.DTOs;
 using QuotesApi.Models;
+using System.Security.Claims;
 
 namespace QuotesApi.Controllers
 {
@@ -16,31 +17,43 @@ namespace QuotesApi.Controllers
             _context = context;
         }
 
-        [HttpPut]
-        public async Task<ActionResult<List<Rating>>> RateQuote([FromBody] RatingDTO dto)
+
+        [HttpPost]
+        public async Task<ActionResult<QuoteDisplayDTO>> RateQuote([FromBody] RatingDTO ratingDTO)
         {
-            //TODO:Get userid from claim instead of dto, to avoid voting for other users based on id
-            var user = await _context.Users.FindAsync(dto.UserId);
+            string currentUserId = "";
+            if (HttpContext.User.Identity is ClaimsIdentity identity)
+            {
+                currentUserId = identity
+                    .FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
+            }
+
+            var user = await _context.Users.FindAsync(Guid.Parse(currentUserId));
             if (user is null)
                 return BadRequest("Voting user not found");
 
-            var quote = await _context.Quotes.FindAsync(dto.QuoteId);
+            var quote = await _context.Quotes.FindAsync(ratingDTO.QuoteId);
             if (quote is null)
                 return BadRequest("Quote not found");
 
             //Check if user already rated quote
-            var currentRating = await _context.Ratings.Where(r => r.Quote.Id == dto.QuoteId && r.User.Id == dto.UserId)
+            var currentRating = await _context.Ratings.Include(r => r.User)
+                .Include(r => r.Quote)
+                .Where(r => r.Quote.Id == ratingDTO.QuoteId && r.User.Id == user.Id)
                 .FirstOrDefaultAsync();
 
             if (currentRating is not null)
             {
-                currentRating.Positive = dto.Positive;
+                if (currentRating.Positive == ratingDTO.Positive)
+                    _context.Ratings.Remove(currentRating);
+                else
+                    currentRating.Positive = ratingDTO.Positive;
             }
             else
             {
                 Rating newRating = new Rating
                 {
-                    Positive = dto.Positive,
+                    Positive = ratingDTO.Positive,
                     User = user,
                     Quote = quote
                 };
@@ -49,8 +62,38 @@ namespace QuotesApi.Controllers
 
             await _context.SaveChangesAsync();
 
-            var quoteRatings = _context.Ratings.Where(r => r.Quote.Id == dto.QuoteId);
-            return Ok(quoteRatings);
+            //TODO: Call QuoteService GetquotedisplayById method here
+            var quotes = await _context.Quotes.Include(q => q.RatingList).ThenInclude(r => r.User)
+                .Where(q => q.Id == ratingDTO.QuoteId).FirstOrDefaultAsync();
+
+            int positiveCounter = 0;
+            int negativeCounter = 0;
+            bool? userVote = null;
+
+            quote.RatingList.ForEach(r =>
+            {
+                if (r.Positive) positiveCounter++;
+                else negativeCounter++;
+
+                if (r.User.Id.ToString() == currentUserId)
+                    userVote = r.Positive;
+            });
+
+            int total = positiveCounter + negativeCounter;
+            if (total == 0)
+                total = 1;
+
+            var retVal = new QuoteGetDTO()
+            {
+                Quote = quote,
+                NegativeCount = negativeCounter,
+                PositiveCount = positiveCounter,
+                UserVotePositive = userVote,
+                Percentage =
+                    (int)Math.Round((double)positiveCounter / ((double)total) * 100),
+            };
+
+            return Ok(retVal);
         }
 
         [HttpDelete]
