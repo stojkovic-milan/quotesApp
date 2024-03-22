@@ -34,7 +34,7 @@ namespace QuotesApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> AddQuote([FromBody] QuoteDTO dto)
+        public async Task<ActionResult<Quote>> AddQuote([FromBody] QuoteDTO dto)
         {
             if (string.IsNullOrEmpty(dto.Author) || string.IsNullOrEmpty(dto.Content))
                 return BadRequest();
