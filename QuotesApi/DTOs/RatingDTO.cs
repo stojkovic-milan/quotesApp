@@ -4,6 +4,5 @@
     {
         public bool Positive { get; set; }
         public Guid QuoteId { get; set; }
-        public Guid UserId { get; set; }
     }
 }
