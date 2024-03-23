@@ -1,10 +1,7 @@
 import { Quote } from "./Quote";
-import { Rating } from "./Rating";
 
-export interface QuoteGetDTO {
+export interface QuoteDisplayDTO {
     quote: Quote;
-    positiveCount: number;
-    negativeCount: number;
     percentage: number;
     userVotePositive: boolean | null;
 }
@@ -14,7 +11,7 @@ export interface RatingDTO {
 }
 
 export interface QuotesResponseDTO {
-    quotes: QuoteGetDTO[];
+    quotes: QuoteDisplayDTO[];
     totalCount: number;
     totalPages: number;
     currentPage: number;

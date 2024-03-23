@@ -6,4 +6,6 @@ export interface Quote {
     author: string;
     tags: string[];
     ratingList: Rating[];
+    positiveCount: number;
+    negativeCount: number;
 }

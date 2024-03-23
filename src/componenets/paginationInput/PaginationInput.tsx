@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { QuoteGetDTO, RatingDTO } from '../../models/DTOs';
+import { QuoteDisplayDTO, RatingDTO } from '../../models/DTOs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown, faCaretLeft, faCaretRight, faCaretUp, faL } from '@fortawesome/free-solid-svg-icons';
 import { Pagination } from '../../models/Pagination';

@@ -1,10 +1,10 @@
 import { FC } from 'react';
-import { QuoteGetDTO, RatingDTO } from '../../models/DTOs';
+import { QuoteDisplayDTO, RatingDTO } from '../../models/DTOs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown, faCaretUp, faL } from '@fortawesome/free-solid-svg-icons';
 
 type QuoteDisplayProps = {
-    quoteDto: QuoteGetDTO,
+    quoteDto: QuoteDisplayDTO,
     handleQuoteRate: (ratingDto: RatingDTO) => Promise<void>
 }
 const QuoteDisplay: FC<QuoteDisplayProps> = ({ quoteDto, handleQuoteRate }) =>
@@ -18,7 +18,9 @@ const QuoteDisplay: FC<QuoteDisplayProps> = ({ quoteDto, handleQuoteRate }) =>
                 style={{ color: `rgb(${(100 - quoteDto.percentage) * 255},${quoteDto.percentage * 255},0)` }}>
                 {`${quoteDto.percentage}%`}
             </p>
-            <p className='text-white text-sm'>{`${quoteDto.positiveCount}/${quoteDto.negativeCount}`}</p>
+            <p className='text-white text-sm'>
+                {`${quoteDto.quote.positiveCount}/${quoteDto.quote.negativeCount}`}
+            </p>
             <FontAwesomeIcon icon={faCaretDown} size='xl'
                 className='cursor-pointer'
                 color={quoteDto.userVotePositive == false ? 'white' : 'gray'}
