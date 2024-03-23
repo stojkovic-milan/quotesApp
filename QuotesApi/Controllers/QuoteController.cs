@@ -4,7 +4,6 @@ using QuotesApi.DTOs;
 using QuotesApi.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace QuotesApi.Controllers
 {
@@ -19,10 +18,22 @@ namespace QuotesApi.Controllers
             _context = context;
         }
 
+
+        //TODO: Move to appropriate file
+        public enum SortType
+        {
+            RatingAsc,
+            RatingDesc,
+            RatingNumAsc,
+            RatingNumDesc,
+            Author,
+            Content,
+        }
+
         [Authorize]
         [HttpGet]
         public async Task<ActionResult<QuotesResponseDTO>> GetQuotes([FromQuery] int page = 1,
-            [FromQuery] int pageSize = 5)
+            [FromQuery] int pageSize = 5, [FromQuery] SortType? sortType = null)
         {
             //TODO: Move to user service claims extraction???
             string currentUserId = "";
@@ -34,13 +45,54 @@ namespace QuotesApi.Controllers
 
             var quotesQuery = _context.Quotes.Include(q => q.RatingList).ThenInclude(r => r.User).AsQueryable();
 
+            //Sorting
+            if (sortType is not null)
+            {
+                IOrderedQueryable<Quote> sortedQuery;
+                switch (sortType)
+                {
+                    case SortType.Author:
+                        sortedQuery = quotesQuery.OrderBy(q => q.Author);
+                        break;
+                    case SortType.Content:
+                        sortedQuery = quotesQuery.OrderBy(q => q.Content);
+                        break;
+                    case SortType.RatingAsc:
+                        sortedQuery = quotesQuery.OrderBy(q =>
+                            (int)Math.Round((double)q.PositiveCount /
+                                            ((double)((q.NegativeCount + q.PositiveCount) > 0
+                                                ? q.NegativeCount + q.PositiveCount
+                                                : 1)) *
+                                            100)).ThenBy(q => q.PositiveCount);
+                        break;
+                    case SortType.RatingDesc:
+                        sortedQuery = quotesQuery.OrderByDescending(q =>
+                            (int)Math.Round((double)q.PositiveCount /
+                                            ((double)((q.NegativeCount + q.PositiveCount) > 0
+                                                ? q.NegativeCount + q.PositiveCount
+                                                : 1)) *
+                                            100)).ThenBy(q => q.NegativeCount);
+                        break;
+                    case SortType.RatingNumAsc:
+                        sortedQuery = quotesQuery.OrderBy(q => q.NegativeCount + q.PositiveCount);
+                        break;
+                    //SortType.RatingNumDesc
+                    default:
+                        sortedQuery = quotesQuery.OrderByDescending(q => q.NegativeCount + q.PositiveCount);
+                        break;
+                }
+
+                quotesQuery = sortedQuery;
+            }
+
+            //Pagination
             var totalCount = quotesQuery.Count();
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-
             quotesQuery = quotesQuery.Skip((page - 1) * pageSize).Take(pageSize);
+
             var quotes = quotesQuery.AsEnumerable();
 
-            List<QuoteGetDTO> result = new List<QuoteGetDTO>();
+            List<QuoteDisplayDTO> result = new List<QuoteDisplayDTO>();
 
 
             foreach (var quote in quotes)
@@ -62,7 +114,7 @@ namespace QuotesApi.Controllers
                 if (total == 0)
                     total = 1;
 
-                result.Add(new QuoteGetDTO()
+                result.Add(new QuoteDisplayDTO()
                 {
                     Quote = quote,
                     NegativeCount = negativeCounter,
@@ -72,6 +124,7 @@ namespace QuotesApi.Controllers
                         (int)Math.Round((double)positiveCounter / ((double)total) * 100),
                 });
             }
+
 
             var retVal = new QuotesResponseDTO
             {
@@ -94,15 +147,16 @@ namespace QuotesApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Quote>> AddQuote([FromBody] QuoteDisplayDTO displayDto)
+        public async Task<ActionResult<Quote>> AddQuote([FromBody] QuoteCreateDTO quoteDto)
         {
-            if (string.IsNullOrEmpty(displayDto.Author) || string.IsNullOrEmpty(displayDto.Content))
+            if (string.IsNullOrEmpty(quoteDto.Author) || string.IsNullOrEmpty(quoteDto.Content))
                 return BadRequest();
 
             Quote newQuote = new Quote
             {
-                Content = displayDto.Content,
-                Author = displayDto.Author
+                Content = quoteDto.Content,
+                Author = quoteDto.Author,
+                Tags = quoteDto.TagList
             };
 
             await _context.Quotes.AddAsync(newQuote);

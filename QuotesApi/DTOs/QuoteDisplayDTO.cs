@@ -1,8 +1,13 @@
-﻿namespace QuotesApi.DTOs
+﻿using QuotesApi.Models;
+
+namespace QuotesApi.DTOs
 {
     public class QuoteDisplayDTO
     {
-        public string Content { get; set; } = string.Empty;
-        public string Author { get; set; } = string.Empty;
+        public Quote Quote { get; set; } = null!;
+        public int PositiveCount { get; set; }
+        public int NegativeCount { get; set; }
+        public int Percentage { get; set; }
+        public bool? UserVotePositive { get; set; }
     }
 }

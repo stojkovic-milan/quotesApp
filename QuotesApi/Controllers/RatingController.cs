@@ -19,7 +19,7 @@ namespace QuotesApi.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<QuoteDisplayDTO>> RateQuote([FromBody] RatingDTO ratingDTO)
+        public async Task<ActionResult<QuoteCreateDTO>> RateQuote([FromBody] RatingDTO ratingDTO)
         {
             string currentUserId = "";
             if (HttpContext.User.Identity is ClaimsIdentity identity)
@@ -42,55 +42,73 @@ namespace QuotesApi.Controllers
                 .Where(r => r.Quote.Id == ratingDTO.QuoteId && r.User.Id == user.Id)
                 .FirstOrDefaultAsync();
 
-            if (currentRating is not null)
+            using var transaction = _context.Database.BeginTransaction();
+            try
             {
-                if (currentRating.Positive == ratingDTO.Positive)
-                    _context.Ratings.Remove(currentRating);
-                else
-                    currentRating.Positive = ratingDTO.Positive;
-            }
-            else
-            {
-                Rating newRating = new Rating
+                if (currentRating is not null)
                 {
-                    Positive = ratingDTO.Positive,
-                    User = user,
-                    Quote = quote
-                };
-                await _context.Ratings.AddAsync(newRating);
+                    if (currentRating.Positive == ratingDTO.Positive)
+                    {
+                        _context.Ratings.Remove(currentRating);
+                        if (currentRating.Positive)
+                            quote.PositiveCount--;
+                        else
+                            quote.NegativeCount--;
+                    }
+                    else
+                    {
+                        currentRating.Positive = ratingDTO.Positive;
+                        if (ratingDTO.Positive)
+                        {
+                            quote.NegativeCount--;
+                            quote.PositiveCount++;
+                        }
+                        else
+                        {
+                            quote.NegativeCount++;
+                            quote.PositiveCount--;
+                        }
+                    }
+                }
+                else
+                {
+                    Rating newRating = new Rating
+                    {
+                        Positive = ratingDTO.Positive,
+                        User = user,
+                        Quote = quote
+                    };
+                    await _context.Ratings.AddAsync(newRating);
+                    if (ratingDTO.Positive)
+                        quote.PositiveCount++;
+                    else
+                        quote.NegativeCount++;
+
+                    currentRating = newRating;
+                }
+
+                await _context.SaveChangesAsync();
+                transaction.Commit();
+            }
+            catch (Exception e)
+            {
+                transaction.Rollback();
+                return BadRequest(e);
             }
 
-            await _context.SaveChangesAsync();
 
             //TODO: Call QuoteService GetquotedisplayById method here
-            var quotes = await _context.Quotes.Include(q => q.RatingList).ThenInclude(r => r.User)
-                .Where(q => q.Id == ratingDTO.QuoteId).FirstOrDefaultAsync();
 
-            int positiveCounter = 0;
-            int negativeCounter = 0;
-            bool? userVote = null;
-
-            quote.RatingList.ForEach(r =>
-            {
-                if (r.Positive) positiveCounter++;
-                else negativeCounter++;
-
-                if (r.User.Id.ToString() == currentUserId)
-                    userVote = r.Positive;
-            });
-
-            int total = positiveCounter + negativeCounter;
+            int total = quote.PositiveCount + quote.NegativeCount;
             if (total == 0)
                 total = 1;
 
-            var retVal = new QuoteGetDTO()
+            var retVal = new QuoteDisplayDTO()
             {
                 Quote = quote,
-                NegativeCount = negativeCounter,
-                PositiveCount = positiveCounter,
-                UserVotePositive = userVote,
+                UserVotePositive = currentRating.Positive,
                 Percentage =
-                    (int)Math.Round((double)positiveCounter / ((double)total) * 100),
+                    (int)Math.Round((double)quote.PositiveCount / ((double)total) * 100),
             };
 
             return Ok(retVal);
