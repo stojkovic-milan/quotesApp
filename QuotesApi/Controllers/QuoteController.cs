@@ -4,6 +4,7 @@ using QuotesApi.DTOs;
 using QuotesApi.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace QuotesApi.Controllers
 {
@@ -20,19 +21,25 @@ namespace QuotesApi.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<ActionResult<List<QuoteDisplayDTO>>> GetQuotes()
+        public async Task<ActionResult<QuotesResponseDTO>> GetQuotes([FromQuery] int page = 1,
+            [FromQuery] int pageSize = 5)
         {
             //TODO: Move to user service claims extraction???
             string currentUserId = "";
             if (HttpContext.User.Identity is ClaimsIdentity identity)
             {
-                //IEnumerable<Claim> claims = identity.Claims;
-                // or
                 currentUserId = identity
                     .FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             }
 
-            var quotes = _context.Quotes.Include(q => q.RatingList).ThenInclude(r => r.User);
+            var quotesQuery = _context.Quotes.Include(q => q.RatingList).ThenInclude(r => r.User).AsQueryable();
+
+            var totalCount = quotesQuery.Count();
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+            quotesQuery = quotesQuery.Skip((page - 1) * pageSize).Take(pageSize);
+            var quotes = quotesQuery.AsEnumerable();
+
             List<QuoteGetDTO> result = new List<QuoteGetDTO>();
 
 
@@ -66,7 +73,14 @@ namespace QuotesApi.Controllers
                 });
             }
 
-            return Ok(result);
+            var retVal = new QuotesResponseDTO
+            {
+                Quotes = result,
+                CurrentPage = page,
+                TotalCount = totalCount,
+                TotalPages = totalPages
+            };
+            return Ok(retVal);
         }
 
         [HttpGet]
