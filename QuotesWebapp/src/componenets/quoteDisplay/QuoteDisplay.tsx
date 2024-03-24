@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { QuoteDisplayDTO, RatingDTO } from '../../models/DTOs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretDown, faCaretUp, faL } from '@fortawesome/free-solid-svg-icons';
+import { faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
 
 type QuoteDisplayProps = {
     quoteDto: QuoteDisplayDTO,

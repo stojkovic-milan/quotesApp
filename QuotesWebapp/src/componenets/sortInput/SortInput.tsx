@@ -1,7 +1,6 @@
 import { FC } from 'react';
 import { SortType } from '../../utils/enums';
 
-
 type SortInputProps = {
     sortType: SortType,
     setSortType: React.Dispatch<React.SetStateAction<SortType>>

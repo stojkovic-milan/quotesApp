@@ -1,5 +1,5 @@
 export enum SortType {
-    Newest = "Newest",
+    Default = "Default",
     RatingAsc = "RatingAsc",
     RatingDesc = "RatingDesc",
     RatingNumAsc = "RatingNumAsc",

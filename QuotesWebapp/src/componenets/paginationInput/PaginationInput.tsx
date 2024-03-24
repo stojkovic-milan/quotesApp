@@ -1,7 +1,6 @@
 import { FC } from 'react';
-import { QuoteDisplayDTO, RatingDTO } from '../../models/DTOs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretDown, faCaretLeft, faCaretRight, faCaretUp, faL } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { Pagination } from '../../models/Pagination';
 
 type PaginationInputProps = {

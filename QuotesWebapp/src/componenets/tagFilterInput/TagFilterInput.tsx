@@ -1,14 +1,14 @@
 import { FC } from 'react';
-import { SortType } from '../../utils/enums';
-
+import { Pagination } from '../../models/Pagination';
 
 type TagFilterInputProps = {
     tagOptions: string[],
     filteredTags: string[],
-    setFilteredTags: React.Dispatch<React.SetStateAction<string[]>>
+    setFilteredTags: React.Dispatch<React.SetStateAction<string[]>>,
+    setPagination: React.Dispatch<React.SetStateAction<Pagination | undefined>>
 }
 
-const TagFilterInput: FC<TagFilterInputProps> = ({ tagOptions, setFilteredTags, filteredTags }) => {
+const TagFilterInput: FC<TagFilterInputProps> = ({ tagOptions, setFilteredTags, filteredTags, setPagination }) => {
     const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         var updatedTags = [...filteredTags];
         if (event.target.checked) {
@@ -17,6 +17,7 @@ const TagFilterInput: FC<TagFilterInputProps> = ({ tagOptions, setFilteredTags, 
             updatedTags.splice(filteredTags.indexOf(event.target.value), 1);
         }
         setFilteredTags(updatedTags);
+        setPagination(prevPagination => ({ ...(prevPagination as Pagination), currentPage: 1 }))
     }
 
     return (
