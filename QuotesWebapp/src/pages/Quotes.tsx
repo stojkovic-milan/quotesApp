@@ -56,7 +56,7 @@ const Quotes: FC = () => {
     }, [pagination?.currentPage, sortType, filteredTags])
 
     return (
-        <div className="bg-gray-600 h-full w-full">
+        <div className="bg-gray-600 h-full w-full font-roboto">
             <div className='w-full flex justify-center items-center pt-4 text-white flex-col gap-2'>
                 <h1 className='text-5xl'>Quotes</h1>
                 <div className="flex flex-row w-full justify-center gap-4 items-center pt-4">
@@ -66,12 +66,12 @@ const Quotes: FC = () => {
                             <SortInput setSortType={setSortType} sortType={sortType} />
                         </div>
                     </div>
-                    <div className="flex gap-2 items-center">
+                    {tagOptions && <div className="flex gap-2 items-center">
                         <span className="text-xl">Filter Tags:</span>
                         <div>
                             <TagFilterInput setFilteredTags={setFilteredTags} tagOptions={tagOptions} filteredTags={filteredTags} />
                         </div>
-                    </div>
+                    </div>}
                 </div>
             </div>
             <div className='w-full flex flex-col items-center pt-2 px-12 gap-6'>
