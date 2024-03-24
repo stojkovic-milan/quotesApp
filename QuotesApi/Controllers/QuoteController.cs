@@ -13,7 +13,7 @@ namespace QuotesApi.Controllers
         private readonly IQuoteService _quoteService;
 
 
-        public QuoteController(QuotesContext context, IQuoteService quoteService)
+        public QuoteController(IQuoteService quoteService)
         {
             _quoteService = quoteService;
         }

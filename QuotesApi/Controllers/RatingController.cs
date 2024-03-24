@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using QuotesApi.DTOs;
 using QuotesApi.Services;
 
@@ -15,7 +16,7 @@ namespace QuotesApi.Controllers
             _ratingService = ratingService;
         }
 
-
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<QuoteDisplayDTO>> RateQuote([FromBody] RatingDTO ratingDTO)
         {

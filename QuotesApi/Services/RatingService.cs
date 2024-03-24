@@ -32,7 +32,9 @@ namespace QuotesApi.Services
                 .Include(r => r.Quote)
                 .Where(r => r.Quote.Id == ratingDTO.QuoteId && r.User.Id == user.Id)
                 .FirstOrDefaultAsync();
+
             bool? newRatingPositive;
+            
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -40,6 +42,7 @@ namespace QuotesApi.Services
                 {
                     if (currentRating.Positive == ratingDTO.Positive)
                     {
+                        //Remove current rating
                         _context.Ratings.Remove(currentRating);
                         newRatingPositive = null;
                         if (currentRating.Positive)
@@ -49,6 +52,7 @@ namespace QuotesApi.Services
                     }
                     else
                     {
+                        //Change current rating to opposite
                         currentRating.Positive = ratingDTO.Positive;
                         newRatingPositive = ratingDTO.Positive;
                         if (ratingDTO.Positive)
@@ -65,6 +69,7 @@ namespace QuotesApi.Services
                 }
                 else
                 {
+                    //Create new rating
                     Rating newRating = new Rating
                     {
                         Positive = ratingDTO.Positive,
@@ -77,7 +82,6 @@ namespace QuotesApi.Services
                     else
                         quote.NegativeCount++;
 
-                    currentRating = newRating;
                     newRatingPositive = newRating.Positive;
                 }
 

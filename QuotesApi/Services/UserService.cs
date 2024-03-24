@@ -101,7 +101,7 @@ public class UserService : IUserService
 
         var token = new JwtSecurityToken(
             claims: claims,
-            expires: DateTime.Now.AddDays(8),
+            expires: DateTime.Now.AddDays(8), //8 days for testing
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

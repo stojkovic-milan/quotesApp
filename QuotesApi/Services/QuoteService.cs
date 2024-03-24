@@ -91,22 +91,9 @@ public class QuoteService : IQuoteService
 
         foreach (var quote in quotes)
         {
-            int positiveCounter = 0;
-            int negativeCounter = 0;
+            //Check for current user's rating
             bool? userVote = null;
-
-            quote.RatingList.ForEach(r =>
-            {
-                if (r.Positive) positiveCounter++;
-                else negativeCounter++;
-
-                if (r.User.Id.ToString() == currentUserId)
-                    userVote = r.Positive;
-            });
-
-            int total = positiveCounter + negativeCounter;
-            if (total == 0)
-                total = 1;
+            userVote = quote.RatingList.FirstOrDefault(r => r.User.Id.ToString() == currentUserId)?.Positive;
 
             result.Add(GetQuoteDisplay(quote, userVote));
         }
