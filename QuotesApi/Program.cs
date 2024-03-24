@@ -33,6 +33,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient(typeof(IQuoteService), typeof(QuoteService));
 builder.Services.AddTransient(typeof(IUserService), typeof(UserService));
+builder.Services.AddTransient(typeof(IRatingService), typeof(RatingService));
 builder.Services.AddCors();
 
 var app = builder.Build();

@@ -4,13 +4,13 @@ using QuotesApi.Models;
 
 namespace QuotesApi.Services
 {
-    public class RatingServices : IRatingService
+    public class RatingService : IRatingService
     {
         private readonly QuotesContext _context;
         private readonly IUserService _userService;
         private readonly IQuoteService _quoteService;
 
-        public RatingServices(QuotesContext context, IUserService userService, IQuoteService quoteService)
+        public RatingService(QuotesContext context, IUserService userService, IQuoteService quoteService)
         {
             _context = context;
             _userService = userService;
@@ -32,7 +32,7 @@ namespace QuotesApi.Services
                 .Include(r => r.Quote)
                 .Where(r => r.Quote.Id == ratingDTO.QuoteId && r.User.Id == user.Id)
                 .FirstOrDefaultAsync();
-
+            bool? newRatingPositive;
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -41,6 +41,7 @@ namespace QuotesApi.Services
                     if (currentRating.Positive == ratingDTO.Positive)
                     {
                         _context.Ratings.Remove(currentRating);
+                        newRatingPositive = null;
                         if (currentRating.Positive)
                             quote.PositiveCount--;
                         else
@@ -49,6 +50,7 @@ namespace QuotesApi.Services
                     else
                     {
                         currentRating.Positive = ratingDTO.Positive;
+                        newRatingPositive = ratingDTO.Positive;
                         if (ratingDTO.Positive)
                         {
                             quote.NegativeCount--;
@@ -76,6 +78,7 @@ namespace QuotesApi.Services
                         quote.NegativeCount++;
 
                     currentRating = newRating;
+                    newRatingPositive = newRating.Positive;
                 }
 
                 await _context.SaveChangesAsync();
@@ -87,7 +90,7 @@ namespace QuotesApi.Services
                 throw;
             }
 
-            var retVal = _quoteService.GetQuoteDisplay(quote, currentRating.Positive);
+            var retVal = _quoteService.GetQuoteDisplay(quote, newRatingPositive);
 
             return retVal;
         }
