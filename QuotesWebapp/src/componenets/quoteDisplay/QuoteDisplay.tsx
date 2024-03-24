@@ -8,7 +8,7 @@ type QuoteDisplayProps = {
     handleQuoteRate: (ratingDto: RatingDTO) => Promise<void>
 }
 const QuoteDisplay: FC<QuoteDisplayProps> = ({ quoteDto, handleQuoteRate }) =>
-    <div className='h-full w-full flex flex-row max-h-28'>
+    <div className='w-full flex flex-row h-28'>
         <div className='w-1/12 h-full flex flex-col justify-center items-center'>
             <FontAwesomeIcon icon={faCaretUp} size='xl'
                 className='cursor-pointer'

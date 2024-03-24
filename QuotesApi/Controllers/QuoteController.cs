@@ -22,6 +22,7 @@ namespace QuotesApi.Controllers
         //TODO: Move to appropriate file
         public enum SortType
         {
+            Default,
             RatingAsc,
             RatingDesc,
             RatingNumAsc,
@@ -32,7 +33,9 @@ namespace QuotesApi.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<ActionResult<QuotesResponseDTO>> GetQuotes([FromQuery] int page = 1,
+        public async Task<ActionResult<QuotesResponseDTO>> GetQuotes(
+            [FromQuery] List<string>? filterTags,
+            [FromQuery] int page = 1,
             [FromQuery] int pageSize = 5, [FromQuery] SortType? sortType = null)
         {
             //TODO: Move to user service claims extraction???
@@ -43,10 +46,17 @@ namespace QuotesApi.Controllers
                     .FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             }
 
+
             var quotesQuery = _context.Quotes.Include(q => q.RatingList).ThenInclude(r => r.User).AsQueryable();
 
+            //Filtering
+            if (filterTags is not null && filterTags.Count > 0)
+            {
+                quotesQuery = quotesQuery.Where(q => q.Tags.Any(t => filterTags.Contains(t)));
+            }
+
             //Sorting
-            if (sortType is not null)
+            if (sortType is not null && sortType != SortType.Default)
             {
                 IOrderedQueryable<Quote> sortedQuery;
                 switch (sortType)
@@ -144,6 +154,17 @@ namespace QuotesApi.Controllers
             if (quote is null)
                 return NotFound("Quote with id not found");
             return Ok(quote);
+        }
+
+        [HttpGet]
+        [Route("Tags")]
+        public async Task<ActionResult<List<string>>> GetAllTags()
+        {
+            IEnumerable<string> tags = Enumerable.Empty<string>();
+
+            await _context.Quotes.ForEachAsync(q => { tags = tags.Union(q.Tags); });
+
+            return Ok(tags);
         }
 
         [HttpPost]
