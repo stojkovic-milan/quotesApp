@@ -7,5 +7,7 @@ namespace QuotesApi.Services
     {
         public Task<SignupResponseDTO> SignUp(SignupDTO signupDTO);
         public Task<SignupResponseDTO> SignIn(SignupDTO signinDTO);
+        public Guid GetCurrentUserId();
+        public Task<User?> GetCurrentUser();
     }
 }

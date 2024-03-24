@@ -11,11 +11,13 @@ public class UserService : IUserService
 {
     private readonly IConfiguration _config;
     private readonly QuotesContext _context;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public UserService(IConfiguration config, QuotesContext context)
+    public UserService(IConfiguration config, QuotesContext context, IHttpContextAccessor httpContextAccessor)
     {
         _config = config;
         _context = context;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<SignupResponseDTO> SignUp(SignupDTO signupDTO)
@@ -60,6 +62,28 @@ public class UserService : IUserService
         {
             Token = CreateToken(user)
         };
+    }
+
+    public Guid GetCurrentUserId()
+    {
+        string? currentUserId = "";
+        if (_httpContextAccessor.HttpContext?.User.Identity is ClaimsIdentity identity)
+        {
+            currentUserId = identity
+                .FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        }
+
+        if (currentUserId is null)
+            throw new Exception("User not logged in");
+
+        return Guid.Parse(currentUserId);
+    }
+
+    public async Task<User?> GetCurrentUser()
+    {
+        var currentUserId = GetCurrentUserId();
+        var currentUser = await _context.Users.FindAsync(currentUserId);
+        return currentUser;
     }
 
     public string CreateToken(User u)
