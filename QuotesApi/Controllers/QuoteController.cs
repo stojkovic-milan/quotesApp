@@ -25,7 +25,7 @@ namespace QuotesApi.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 5, [FromQuery] SortType? sortType = null)
         {
-            var retVal = _quoteService.GetQuotes(filterTags, page, pageSize);
+            var retVal = _quoteService.GetQuotes(filterTags, page, pageSize,sortType);
             return Ok(retVal);
         }
 
