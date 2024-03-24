@@ -1,9 +1,6 @@
-﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using QuotesApi.DTOs;
 using QuotesApi.Models;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using QuotesApi.Services;
 

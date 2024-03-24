@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using QuotesApi.DTOs;
 using QuotesApi.Models;
-using System.Security.Claims;
 
 namespace QuotesApi.Services
 {

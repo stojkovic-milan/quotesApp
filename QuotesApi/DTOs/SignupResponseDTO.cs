@@ -1,6 +1,4 @@
-﻿using QuotesApi.Models;
-
-namespace QuotesApi.DTOs
+﻿namespace QuotesApi.DTOs
 {
     public class SignupResponseDTO
     {

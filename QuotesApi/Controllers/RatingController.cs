@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using QuotesApi.DTOs;
-using System.Security.Claims;
 using QuotesApi.Services;
 
 namespace QuotesApi.Controllers

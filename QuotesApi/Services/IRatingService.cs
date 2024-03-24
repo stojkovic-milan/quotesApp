@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using QuotesApi.DTOs;
+﻿using QuotesApi.DTOs;
 
 namespace QuotesApi.Services
 {
